@@ -14,7 +14,7 @@ import OwnerHome from './pages/owner/OwnerHome';
 import ParkingList from './pages/owner/ParkingList';
 import MyReservations from './pages/owner/MyReservations';
 
-const ProtectedRoute = ({ children, allowedRoles = [] }) => {
+const AdminRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
@@ -23,27 +23,43 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles.length > 0 && user && !allowedRoles.includes(user.role)) {
+  if (user?.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
 
   return children;
 };
 
-const AdminRoute = ({ children }) => {
-  return (
-    <ProtectedRoute allowedRoles={['admin']}>
-      {children}
-    </ProtectedRoute>
-  );
+const OwnerRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user?.role !== 'owner') {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 };
 
-const OwnerRoute = ({ children }) => {
-  return (
-    <ProtectedRoute allowedRoles={['owner']}>
-      {children}
-    </ProtectedRoute>
-  );
+const HomeRedirect = () => {
+  const token = localStorage.getItem('token');
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin-dashboard" replace />;
+  }
+
+  return <Navigate to="/owner-home" replace />;
 };
 
 const App = () => {
@@ -56,73 +72,64 @@ const App = () => {
     }
   }, []);
 
-  const isAdmin = user?.role === 'admin';
-
-  const renderAdminRoutes = () => (
-    <>
-      <Route path="/" element={
-        <AdminRoute>
-          <MainLayout user={user}>
-            <Dashboard />
-          </MainLayout>
-        </AdminRoute>
-      } />
-      <Route path="/parking-manage" element={
-        <AdminRoute>
-          <MainLayout user={user}>
-            <ParkingManage />
-          </MainLayout>
-        </AdminRoute>
-      } />
-      <Route path="/reservation-manage" element={
-        <AdminRoute>
-          <MainLayout user={user}>
-            <ReservationManage />
-          </MainLayout>
-        </AdminRoute>
-      } />
-      <Route path="/statistics" element={
-        <AdminRoute>
-          <MainLayout user={user}>
-            <Statistics />
-          </MainLayout>
-        </AdminRoute>
-      } />
-    </>
-  );
-
-  const renderOwnerRoutes = () => (
-    <>
-      <Route path="/" element={
-        <OwnerRoute>
-          <MainLayout user={user}>
-            <OwnerHome user={user} />
-          </MainLayout>
-        </OwnerRoute>
-      } />
-      <Route path="/parking-list" element={
-        <OwnerRoute>
-          <MainLayout user={user}>
-            <ParkingList />
-          </MainLayout>
-        </OwnerRoute>
-      } />
-      <Route path="/my-reservations" element={
-        <OwnerRoute>
-          <MainLayout user={user}>
-            <MyReservations />
-          </MainLayout>
-        </OwnerRoute>
-      } />
-    </>
-  );
-
   return (
     <ConfigProvider locale={zhCN}>
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
-          {isAdmin ? renderAdminRoutes() : renderOwnerRoutes()}
+          
+          <Route path="/" element={<HomeRedirect />} />
+          
+          <Route path="/admin-dashboard" element={
+            <AdminRoute>
+              <MainLayout user={user}>
+                <Dashboard />
+              </MainLayout>
+            </AdminRoute>
+          } />
+          <Route path="/parking-manage" element={
+            <AdminRoute>
+              <MainLayout user={user}>
+                <ParkingManage />
+              </MainLayout>
+            </AdminRoute>
+          } />
+          <Route path="/reservation-manage" element={
+            <AdminRoute>
+              <MainLayout user={user}>
+                <ReservationManage />
+              </MainLayout>
+            </AdminRoute>
+          } />
+          <Route path="/statistics" element={
+            <AdminRoute>
+              <MainLayout user={user}>
+                <Statistics />
+              </MainLayout>
+            </AdminRoute>
+          } />
+          
+          <Route path="/owner-home" element={
+            <OwnerRoute>
+              <MainLayout user={user}>
+                <OwnerHome user={user} />
+              </MainLayout>
+            </OwnerRoute>
+          } />
+          <Route path="/parking-list" element={
+            <OwnerRoute>
+              <MainLayout user={user}>
+                <ParkingList />
+              </MainLayout>
+            </OwnerRoute>
+          } />
+          <Route path="/my-reservations" element={
+            <OwnerRoute>
+              <MainLayout user={user}>
+                <MyReservations />
+              </MainLayout>
+            </OwnerRoute>
+          } />
         </Routes>
       </Router>
     </ConfigProvider>

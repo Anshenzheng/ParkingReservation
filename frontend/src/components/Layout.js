@@ -28,10 +28,10 @@ const MainLayout = ({ children, user }) => {
 
   const adminMenuItems = [
     {
-      key: '/',
+      key: '/admin-dashboard',
       icon: <HomeOutlined />,
       label: '首页概览',
-      onClick: () => navigate('/'),
+      onClick: () => navigate('/admin-dashboard'),
     },
     {
       key: '/parking-manage',
@@ -55,10 +55,10 @@ const MainLayout = ({ children, user }) => {
 
   const ownerMenuItems = [
     {
-      key: '/',
+      key: '/owner-home',
       icon: <HomeOutlined />,
       label: '首页',
-      onClick: () => navigate('/'),
+      onClick: () => navigate('/owner-home'),
     },
     {
       key: '/parking-list',
